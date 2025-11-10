@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { User, BookOpen, Calendar, Search, LogOut } from "lucide-react";
+import Link from "next/link";
 
 export default function Sidebar() {
   return (
@@ -28,7 +29,9 @@ export default function Sidebar() {
             <BookOpen size={20} /> <span>Contacts</span>
           </div>
           <div className="flex items-center space-x-3">
-            <Calendar size={20} /> <span>Events</span>
+            <Link href="/events" className="flex items-center space-x-3">
+  <Calendar size={20} /> <span>Events</span>
+</Link>
           </div>
           <div className="flex items-center space-x-3">
             <Search size={20} /> <span>Search</span>
