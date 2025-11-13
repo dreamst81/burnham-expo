@@ -28,6 +28,7 @@ export default function TradeShowMapPage({
   --------------------------------------------------------- */
   useEffect(() => {
   async function load() {
+            
     const { data, error } = await supabase
       .from("booths")
       .select(`
@@ -42,6 +43,8 @@ export default function TradeShowMapPage({
       .order("zone", { ascending: true })
       .order("booth_number", { ascending: true });
 
+      console.log("MAP RAW DATA:", data);
+      
     if (error) {
       console.error(error);
       return;
@@ -49,12 +52,14 @@ export default function TradeShowMapPage({
 
     // Normalize: Supabase returns exhibitors as an array
     const normalized = (data || []).map((row: any) => ({
-      ...row,
-      exhibitors:
-        Array.isArray(row.exhibitors) && row.exhibitors.length > 0
-          ? row.exhibitors[0]
-          : null,
-    }));
+  ...row,
+  exhibitors:
+    row.exhibitors && !Array.isArray(row.exhibitors)
+      ? row.exhibitors // handle object form
+      : Array.isArray(row.exhibitors) && row.exhibitors.length > 0
+        ? row.exhibitors[0] // handle array form
+        : null,
+}));
 
     setBooths(normalized as Booth[]);
     setLoading(false);

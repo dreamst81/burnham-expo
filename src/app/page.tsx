@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -75,6 +76,17 @@ Provide:
 
   return (
     <div className="space-y-10 max-w-4xl">
+
+      <div className="flex justify-end items-end">
+          <Image
+            src="/edm-expo-logo.jpg"
+            alt="Burnham Expo Logo"
+            width={400}
+            height={218}
+            className="object-contain"
+            priority
+          />
+        </div>
 
       {/* Intel Snapshot */}
       <div className="bg-white p-6 shadow rounded-xl space-y-4">
