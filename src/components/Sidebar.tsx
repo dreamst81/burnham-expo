@@ -34,6 +34,12 @@ export default function Sidebar() {
 <Link href="/exhibitors" className="flex items-center space-x-3 hover:opacity-90">
   <User size={20} /> <span>Exhibitors</span>
 </Link>
+<Link href="/trade-shows" className="flex items-center space-x-3 hover:opacity-90">
+  <User size={20} /> <span>Trade Shows</span>
+</Link>
+<Link href="/trade-shows/341ac0f3-82e0-484a-9809-ff512d6722a4/map" className="flex items-center space-x-3 hover:opacity-90">
+  <User size={20} /> <span>MWW Map</span>
+</Link>
           <Link href="/users" className="flex items-center space-x-3 hover:opacity-90">
   <User size={20} /> <span>Users</span>
 </Link>
