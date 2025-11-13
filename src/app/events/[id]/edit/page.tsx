@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
 export default function EditEventPage({ params }: any) {
   const router = useRouter();
-  const id = params.id;
+  const { id } = use<{ id: string }>(params);
 
   const [eventData, setEventData] = useState<any>(null);
   const [name, setName] = useState("");

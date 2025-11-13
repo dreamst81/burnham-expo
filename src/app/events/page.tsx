@@ -47,36 +47,45 @@ export default function EventsPage() {
       <ul className="space-y-4">
         {events.map((event) => (
           <li
-            key={event.id}
-            className="bg-white p-4 rounded-xl shadow flex justify-between items-start"
-          >
-            <div className="flex flex-col">
-              <span className="text-xl font-semibold">{event.name}</span>
-              <span className="text-gray-600">
-                {new Date(event.start_date).toLocaleDateString()} —{" "}
-                {new Date(event.end_date).toLocaleDateString()}
-              </span>
-              {event.location && (
-                <span className="text-gray-500">{event.location}</span>
-              )}
-            </div>
+  key={event.id}
+  className="relative bg-white p-4 rounded-xl shadow hover:shadow-md transition cursor-pointer"
+  onClick={() => (window.location.href = `/events/${event.id}`)}
+>
+  {/* Main content */}
+  <div className="flex justify-between items-start">
+    <div className="flex flex-col">
+      <span className="text-xl font-semibold">{event.name}</span>
+      <span className="text-gray-600">
+        {new Date(event.start_date).toLocaleDateString()} —{" "}
+        {new Date(event.end_date).toLocaleDateString()}
+      </span>
+      {event.location && (
+        <span className="text-gray-500">{event.location}</span>
+      )}
+    </div>
 
-            <div className="flex space-x-2">
-  <a
-    href={`/events/${event.id}/edit`}
-    className="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-800 text-sm"
-  >
-    Edit
-  </a>
+    {/* Buttons */}
+    <div className="flex space-x-2 z-10">
+      <a
+        href={`/events/${event.id}/edit`}
+        onClick={(e) => e.stopPropagation()} // prevent row click
+        className="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-800 text-sm"
+      >
+        Edit
+      </a>
 
-  <button
-    onClick={() => deleteEvent(event.id)}
-    className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 text-sm"
-  >
-    Delete
-  </button>
-</div>
-          </li>
+      <button
+        onClick={(e) => {
+          e.stopPropagation(); // prevent row click
+          deleteEvent(event.id);
+        }}
+        className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 text-sm"
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+</li>
         ))}
       </ul>
     </div>

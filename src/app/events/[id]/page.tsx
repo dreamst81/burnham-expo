@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 
+
 export default function EventDetailPage({ params }: any) {
-  const id = params.id;
+  const { id } = use<{ id: string }>(params);
 
   const [eventData, setEventData] = useState<any>(null);
   const [attendees, setAttendees] = useState<any[]>([]);

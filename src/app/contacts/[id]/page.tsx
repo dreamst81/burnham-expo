@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function ContactDetailPage({ params }: any) {
-  const id = params.id;
+  const { id } = use<{ id: string }>(params);
 
   const [contact, setContact] = useState<any>(null);
   const [notes, setNotes] = useState("");

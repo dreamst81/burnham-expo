@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
 export default function EditContactPage({ params }: any) {
   const router = useRouter();
-  const id = params.id;
+  const { id } = use<{ id: string }>(params);
 
   const [events, setEvents] = useState<any[]>([]);
   const [contact, setContact] = useState<any>(null);

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { User, BookOpen, Calendar, Search, LogOut } from "lucide-react";
+import { User, BookOpen, Calendar, Search, LogOut, HomeIcon } from "lucide-react";
 import Link from "next/link";
 
 export default function Sidebar() {
@@ -22,18 +22,21 @@ export default function Sidebar() {
 
         {/* 🔽 Navigation */}
         <div className="space-y-6">
-          <div className="flex items-center space-x-3">
-            <User size={20} /> <span>Dan Roxas</span>
-          </div>
+          <Link href="/" className="flex items-center space-x-3 hover:opacity-90">
+  <HomeIcon size={20} /> <span>Dashboard</span>
+</Link>
           <Link href="/contacts" className="flex items-center space-x-3 hover:opacity-90">
   <BookOpen size={20} /> <span>Contacts</span>
 </Link>
-          <Link href="/events" className="flex items-center space-x-3">
+          <Link href="/events" className="flex items-center space-x-3 hover:opacity-90">
   <Calendar size={20} /> <span>Events</span>
 </Link>
-          <div className="flex items-center space-x-3">
-            <Search size={20} /> <span>Search</span>
-          </div>
+<Link href="/exhibitors" className="flex items-center space-x-3 hover:opacity-90">
+  <User size={20} /> <span>Exhibitors</span>
+</Link>
+          <Link href="/users" className="flex items-center space-x-3 hover:opacity-90">
+  <User size={20} /> <span>Users</span>
+</Link>
         </div>
       </div>
 
