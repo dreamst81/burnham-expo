@@ -6,6 +6,12 @@ export default async function EventsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Events</h1>
+      <a
+  href="/events/new"
+  className="inline-block bg-[#3b4522] text-white px-4 py-2 rounded-lg hover:bg-[#2c341a]"
+>
+  + Add Event
+</a>
       <ul className="space-y-4">
         {events?.map((event) => (
           <li
