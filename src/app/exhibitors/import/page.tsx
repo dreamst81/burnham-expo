@@ -4,47 +4,59 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 /* -------------------------------------------------------
-   🔥 SUPER-PARSER: Parses booth strings into usable entries
+   🔥 TYPE DEFINITIONS
 --------------------------------------------------------- */
-function parseBoothString(raw: string | null): {
+
+type BoothEntry = {
   booth_number: string;
   zone: string;
-}[] {
+};
+
+type ExhibitorParsed = {
+  name: string;
+  category: string | null;
+  website: string | null;
+  boothEntries: BoothEntry[];
+};
+
+/* -------------------------------------------------------
+   🔥 DETERMINE NUMERIC ZONE
+--------------------------------------------------------- */
+function determineNumericZone(n: number): string {
+  const base = Math.floor(n / 100) * 100;
+  return `${base}–${base + 99}`;
+}
+
+/* -------------------------------------------------------
+   🔥 BOOTH PARSER
+--------------------------------------------------------- */
+function parseBoothString(raw: string | null): BoothEntry[] {
   if (!raw) return [];
 
-  const cleaned = raw.trim();
+  const parts = raw
+    .trim()
+    .split(",")
+    .map((p) => p.trim());
 
-  // Split comma-separated booth entries
-  const parts = cleaned.split(",").map((p) => p.trim());
-
-  const results: { booth_number: string; zone: string }[] = [];
+  const results: BoothEntry[] = [];
 
   for (const part of parts) {
     if (!part) continue;
 
-    /* -----------------------------
-       CASE 1: Named zone w/ range
-       Example: "UAV West 21-23"
-    ------------------------------ */
-    const namedRangeMatch = part.match(/^([A-Za-z\s]+)\s+(\d+)[–-](\d+)$/);
-    if (namedRangeMatch) {
-      const zone = namedRangeMatch[1].trim();
-      const start = parseInt(namedRangeMatch[2], 10);
-      const end = parseInt(namedRangeMatch[3], 10);
+    // Named zone with range — “UAV West 21-23”
+    const namedRange = part.match(/^([A-Za-z\s]+)\s+(\d+)[–-](\d+)$/);
+    if (namedRange) {
+      const zone = namedRange[1].trim();
+      const start = parseInt(namedRange[2], 10);
+      const end = parseInt(namedRange[3], 10);
 
       for (let n = start; n <= end; n++) {
-        results.push({
-          booth_number: String(n),
-          zone,
-        });
+        results.push({ booth_number: String(n), zone });
       }
       continue;
     }
 
-    /* -----------------------------
-       CASE 2: Range only
-       Example: "4-7"
-    ------------------------------ */
+    // Pure range — “4-7”
     const pureRange = part.match(/^(\d+)[–-](\d+)$/);
     if (pureRange) {
       const start = parseInt(pureRange[1], 10);
@@ -59,39 +71,28 @@ function parseBoothString(raw: string | null): {
       continue;
     }
 
-    /* -----------------------------
-       CASE 3: Named zone w/ single #
-       Example: "Demo Shoothouse 2"
-    ------------------------------ */
+    // Named zone with single number — “Demo Shoothouse 2”
     const namedSingle = part.match(/^([A-Za-z\s]+)\s+(\d+)$/);
     if (namedSingle) {
-      const zone = namedSingle[1].trim();
-      const n = namedSingle[2];
       results.push({
-        booth_number: n,
-        zone,
+        booth_number: namedSingle[2],
+        zone: namedSingle[1].trim(),
       });
       continue;
     }
 
-    /* -----------------------------
-       CASE 4: Pure numeric or alphanumeric
-       Examples: "116", "108p", "207A"
-    ------------------------------ */
+    // Numeric or alphanumeric — “108p” or “207A”
     const numMatch = part.match(/^(\d+)/);
     if (numMatch) {
       const num = parseInt(numMatch[1], 10);
       results.push({
-        booth_number: numMatch[0], // preserve "108p"
+        booth_number: part,
         zone: determineNumericZone(num),
       });
       continue;
     }
 
-    /* -----------------------------
-       CASE 5: Pure text (no #)
-       Example: "Outdoor Demo"
-    ------------------------------ */
+    // Pure text — “Outdoor Demo”
     if (/^[A-Za-z\s]+$/.test(part)) {
       results.push({
         booth_number: "N/A",
@@ -111,18 +112,9 @@ function parseBoothString(raw: string | null): {
 }
 
 /* -------------------------------------------------------
-   🔥 DETERMINE NUMERIC ZONE FOR NUMBER BOOTHS
-   Example: 1910 → "1900–1999"
+   🔥 HTML PARSER → EXHIBITOR PARSED OBJECTS
 --------------------------------------------------------- */
-function determineNumericZone(n: number): string {
-  const base = Math.floor(n / 100) * 100;
-  return `${base}–${base + 99}`;
-}
-
-/* -------------------------------------------------------
-   🔥 ORIGINAL EXHIBITOR PARSER (unchanged)
---------------------------------------------------------- */
-function parseHtmlToExhibitors(html: string) {
+function parseHtmlToExhibitors(html: string): ExhibitorParsed[] {
   const container = document.createElement("div");
   container.innerHTML = html;
 
@@ -130,69 +122,61 @@ function parseHtmlToExhibitors(html: string) {
     container.querySelectorAll('[class*="ExhibitorsStyles__exhibitor-card"]')
   ) as HTMLElement[];
 
-  const exhibitors = cards
-    .map((card) => {
-      /* ---------- NAME ---------- */
-      let name = "";
-      const nameEl = card.querySelector(
-        '[class*="ExhibitorsStyles__card-header"] [class*="placeholder"]'
-      ) as HTMLElement | null;
+  const parsed: ExhibitorParsed[] = [];
 
-      if (nameEl) {
-        name = nameEl.textContent?.trim() || "";
-      }
+  for (const card of cards) {
+    // Name
+    const nameEl = card.querySelector(
+      '[class*="ExhibitorsStyles__card-header"] [class*="placeholder"]'
+    ) as HTMLElement | null;
 
-      if (!name) return null;
+    const name = nameEl?.textContent?.trim() || "";
+    if (!name) continue;
 
-      /* ---------- RAW BOOTH STRING ---------- */
-      let boothRaw: string | null = null;
-      const locEl = card.querySelector(
-        '[class*="ExhibitorsStyles__location-text"]'
-      ) as HTMLElement | null;
+    // Booth raw text
+    const locEl = card.querySelector(
+      '[class*="ExhibitorsStyles__location-text"]'
+    ) as HTMLElement | null;
 
-      if (locEl) boothRaw = locEl.textContent?.trim() || null;
+    const boothRaw =
+      (locEl?.textContent?.trim() as string | null) ?? null;
 
-      /* ---------- CATEGORY ---------- */
-      let category: string | null = null;
-      const catEl = card.querySelector(
-        '[class*="ExhibitorsStyles__categories"] span'
-      ) as HTMLElement | null;
+    // Category
+    const catEl = card.querySelector(
+      '[class*="ExhibitorsStyles__categories"] span'
+    ) as HTMLElement | null;
 
-      if (catEl) category = catEl.textContent?.trim() || null;
+    const category = catEl?.textContent?.trim() || null;
 
-      /* ---------- WEBSITE ---------- */
-      let website: string | null = null;
-      const linkEl = card.querySelector("a[href^='http']") as HTMLAnchorElement | null;
-      if (linkEl) website = linkEl.getAttribute("href") || null;
+    // Website
+    const linkEl = card.querySelector("a[href^='http']") as
+      | HTMLAnchorElement
+      | null;
 
-      /* ---------- MULTIPLE BOOTH PARSING ---------- */
-      const boothEntries = parseBoothString(boothRaw);
+    const website = linkEl?.getAttribute("href") || null;
 
-      return {
-        name,
-        category,
-        website,
-        boothEntries,
-      };
-    })
-    .filter(Boolean) as {
-    name: string;
-    category: string | null;
-    website: string | null;
-    boothEntries: { booth_number: string; zone: string }[];
-  }[];
+    // Booth entries parsed
+    const boothEntries = parseBoothString(boothRaw);
 
-  return exhibitors;
+    parsed.push({
+      name,
+      category,
+      website,
+      boothEntries,
+    });
+  }
+
+  return parsed;
 }
 
+/* -------------------------------------------------------
+   🔥 MAIN COMPONENT
+--------------------------------------------------------- */
 export default function ImportExhibitorsPage() {
   const [rawHtml, setRawHtml] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [inserting, setInserting] = useState(false);
 
-  /* -------------------------------------------------------
-     🔥 IMPORT HANDLER (EXHIBITORS + BOOTHS)
-  --------------------------------------------------------- */
   async function handleImport() {
     setStatus(null);
 
@@ -201,17 +185,17 @@ export default function ImportExhibitorsPage() {
       return;
     }
 
-    const exhibitors = parseHtmlToExhibitors(rawHtml);
+    const parsed = parseHtmlToExhibitors(rawHtml);
 
-    if (exhibitors.length === 0) {
+    if (parsed.length === 0) {
       setStatus("No exhibitors found.");
       return;
     }
 
-    // Dedupe exhibitors by name
-    const exhibitorMap: Record<string, any> = {};
-    exhibitors.forEach((ex) => {
-      exhibitorMap[ex.name] = ex; // last one wins
+    // Deduplicate by name
+    const exhibitorMap: Record<string, ExhibitorParsed> = {};
+    parsed.forEach((ex) => {
+      exhibitorMap[ex.name] = ex;
     });
 
     const uniqueExhibitors = Object.values(exhibitorMap);
@@ -221,59 +205,64 @@ export default function ImportExhibitorsPage() {
     /* -------------------------------------------------------
        1. UPSERT EXHIBITORS
     --------------------------------------------------------- */
-    const { data: upserted, error } = await supabase
+    const upsertPayload = uniqueExhibitors.map((ex) => ({
+      name: ex.name,
+      category: ex.category,
+      website: ex.website,
+    }));
+
+    const { data: upserted, error: upsertErr } = await supabase
       .from("exhibitors")
-      .upsert(
-        uniqueExhibitors.map((ex) => ({
-          name: ex.name,
-          category: ex.category,
-          website: ex.website,
-        })),
-        { onConflict: "name" }
-      )
+      .upsert(upsertPayload, { onConflict: "name" })
       .select("id,name");
 
-    if (error) {
-      console.error(error);
-      setStatus("Error inserting exhibitors: " + error.message);
+    if (upsertErr) {
       setInserting(false);
+      setStatus("Error inserting exhibitors: " + upsertErr.message);
       return;
     }
 
-    // Build lookup
     const idMap: Record<string, string> = {};
-    upserted.forEach((row: any) => {
+    upserted?.forEach((row) => {
       idMap[row.name] = row.id;
     });
 
     /* -------------------------------------------------------
-       2. CLEAN OLD BOOTHS
+       2. CLEAR OLD BOOTHS
     --------------------------------------------------------- */
     await supabase.from("booths").delete().neq("id", "00000000-0000-0000-0000-000000000000");
 
     /* -------------------------------------------------------
-       3. INSERT NEW BOOTH RECORDS
+       3. INSERT BOOTH RECORDS
     --------------------------------------------------------- */
-    const boothPayload: any[] = [];
+    const boothPayload: {
+  exhibitor_id: string;
+  booth_number: string;
+  zone: string;
+  trade_show_id: string;
+}[] = [];
 
-    for (const ex of uniqueExhibitors) {
+    uniqueExhibitors.forEach((ex) => {
       const exhibitor_id = idMap[ex.name];
 
-      ex.boothEntries.forEach((b) => {
-        boothPayload.push({
-          exhibitor_id,
-          booth_number: b.booth_number,
-          zone: b.zone,
-        });
-      });
-    }
+      ex.boothEntries.forEach((b: BoothEntry) => {
+  boothPayload.push({
+    exhibitor_id,
+    booth_number: b.booth_number,
+    zone: b.zone,
+    trade_show_id: "341ac0f3-82e0-484a-9809-ff512d6722a4"
+  });
+});
+    });
 
-    const { error: boothError } = await supabase.from("booths").insert(boothPayload);
+    const { error: boothErr } = await supabase
+      .from("booths")
+      .insert(boothPayload);
 
     setInserting(false);
 
-    if (boothError) {
-      setStatus("Error inserting booths: " + boothError.message);
+    if (boothErr) {
+      setStatus("Error inserting booths: " + boothErr.message);
       return;
     }
 
@@ -288,23 +277,23 @@ export default function ImportExhibitorsPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <h1 className="text-3xl font-bold">Import Exhibitors</h1>
-
+        
       <textarea
         value={rawHtml}
         onChange={(e) => setRawHtml(e.target.value)}
-        className="w-full min-h-[250px] border rounded-lg p-3 font-mono"
-        placeholder="Paste exhibitors HTML here..."
+        className="w-full min-h-[250px] border rounded-lg p-3 font-mono text-sm"
+        placeholder="Paste exhibitors HTML here…"
       />
 
       <button
         onClick={handleImport}
         disabled={inserting}
-        className="bg-[#3b4522] text-white px-4 py-2 rounded-lg"
+        className="bg-[#3b4522] text-white px-4 py-2 rounded-lg disabled:opacity-50"
       >
         {inserting ? "Importing…" : "Import Exhibitors"}
       </button>
 
-      {status && <p className="text-sm text-gray-800 mt-2">{status}</p>}
+      {status && <p className="text-gray-700">{status}</p>}
     </div>
   );
 }

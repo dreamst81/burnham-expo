@@ -27,32 +27,41 @@ export default function TradeShowMapPage({
      LOAD BOOTHS FOR THIS TRADE SHOW
   --------------------------------------------------------- */
   useEffect(() => {
-    async function load() {
-      const { data, error } = await supabase
-        .from("booths")
-        .select(`
-          id,
-          booth_number,
-          zone,
-          exhibitors (
-            name
-          )
-        `)
-        .eq("trade_show_id", tradeShowId)
-        .order("zone", { ascending: true })
-        .order("booth_number", { ascending: true });
+  async function load() {
+    const { data, error } = await supabase
+      .from("booths")
+      .select(`
+        id,
+        booth_number,
+        zone,
+        exhibitors (
+          name
+        )
+      `)
+      .eq("trade_show_id", tradeShowId)
+      .order("zone", { ascending: true })
+      .order("booth_number", { ascending: true });
 
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      setBooths((data as Booth[]) || []);
-      setLoading(false);
+    if (error) {
+      console.error(error);
+      return;
     }
 
-    load();
-  }, [tradeShowId]);
+    // Normalize: Supabase returns exhibitors as an array
+    const normalized = (data || []).map((row: any) => ({
+      ...row,
+      exhibitors:
+        Array.isArray(row.exhibitors) && row.exhibitors.length > 0
+          ? row.exhibitors[0]
+          : null,
+    }));
+
+    setBooths(normalized as Booth[]);
+    setLoading(false);
+  }
+
+  load();
+}, [tradeShowId]);
 
   if (loading) {
     return <div className="p-6 text-xl">Loading booth map…</div>;

@@ -3,20 +3,54 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
+type Booth = {
+  booth_number: string;
+  zone: string;
+};
+
+type Exhibitor = {
+  id: string;
+  name: string;
+  category: string | null;
+  website: string | null;
+  booths: Booth[];
+};
+
 export default function ExhibitorsPage() {
-  const [exhibitors, setExhibitors] = useState<any[]>([]);
+  const [exhibitors, setExhibitors] = useState<Exhibitor[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("exhibitors")
-        .select("*")
+        .select(`
+          id,
+          name,
+          category,
+          website,
+          booths (
+            booth_number,
+            zone
+          )
+        `)
         .order("name", { ascending: true });
 
-      setExhibitors(data || []);
+      if (error) {
+        console.error("Error loading exhibitors:", error);
+        return;
+      }
+
+      // Normalize: booths always come back as array
+      const normalized = (data || []).map((ex: any) => ({
+        ...ex,
+        booths: Array.isArray(ex.booths) ? ex.booths : [],
+      }));
+
+      setExhibitors(normalized as Exhibitor[]);
       setLoading(false);
     }
+
     load();
   }, []);
 
@@ -25,44 +59,65 @@ export default function ExhibitorsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Exhibitors</h1>
-
+    <div className="max-w-4xl space-y-8">
+      <h1 className="text-3xl font-bold mb-4">Exhibitors</h1>
         <a
-          href="/exhibitors/import"
-          className="inline-block bg-[#3b4522] text-white px-4 py-2 rounded-lg hover:bg-[#2c341a]"
-        >
-          Import from HTML
-        </a>
-      </div>
-
-      <ul className="space-y-3">
+  href="/exhibitors/import"
+  className="inline-block bg-[#3b4522] text-white px-4 py-2 rounded-lg hover:bg-[#2c341a]"
+>
+  + Import Exhibitors (HTML)
+</a>
+      <ul className="space-y-6">
         {exhibitors.map((ex) => (
-          <li
-            key={ex.id}
-            className="bg-white p-4 rounded-xl shadow cursor-pointer hover:shadow-md transition"
-            onClick={() => (window.location.href = `/exhibitors/${ex.id}`)}
-          >
-            <div className="flex justify-between items-center">
+          <li key={ex.id}>
+  <a
+    href={`/exhibitors/${ex.id}`}
+    className="block bg-white p-5 rounded-xl shadow border hover:shadow-md transition"
+  >
+            <div className="flex justify-between items-start">
               <div>
-                <p className="text-lg font-semibold">{ex.name}</p>
-                {ex.booth && (
-                  <p className="text-gray-600 text-sm">Booth {ex.booth}</p>
-                )}
-                {ex.website && (
-                  <p className="text-gray-500 text-sm">
-                    {ex.website.replace(/^https?:\/\//, "")}
-                  </p>
+                <h2 className="text-xl font-semibold">{ex.name}</h2>
+                {ex.category && (
+                  <p className="text-gray-600 text-sm mt-1">{ex.category}</p>
                 )}
               </div>
 
-              {ex.priority && (
-                <span className="px-2 py-1 rounded-full bg-yellow-300 text-yellow-900 text-xs font-semibold">
-                  ⭐ Priority
-                </span>
+              {ex.website && (
+                <a
+                  href={ex.website}
+                  target="_blank"
+                  className="text-sm text-blue-600 underline"
+                >
+                  Website
+                </a>
               )}
             </div>
+
+            {/* Booths */}
+            <div className="mt-4">
+              <p className="font-medium text-gray-700 mb-2">Booth Locations:</p>
+
+              {ex.booths.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {ex.booths.map((b, idx) => (
+                    <div
+                      key={idx}
+                      className="border rounded-lg p-3 bg-gray-50 shadow-sm"
+                    >
+                      <div className="text-sm text-gray-500">Booth</div>
+                      <div className="font-semibold">{b.booth_number}</div>
+
+                      <div className="text-xs text-gray-400 mt-1">
+                        Zone: {b.zone}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No booth assigned</p>
+              )}
+            </div>
+            </a>
           </li>
         ))}
       </ul>
