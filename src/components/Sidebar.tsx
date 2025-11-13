@@ -25,14 +25,12 @@ export default function Sidebar() {
           <div className="flex items-center space-x-3">
             <User size={20} /> <span>Dan Roxas</span>
           </div>
-          <div className="flex items-center space-x-3">
-            <BookOpen size={20} /> <span>Contacts</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Link href="/events" className="flex items-center space-x-3">
+          <Link href="/contacts" className="flex items-center space-x-3 hover:opacity-90">
+  <BookOpen size={20} /> <span>Contacts</span>
+</Link>
+          <Link href="/events" className="flex items-center space-x-3">
   <Calendar size={20} /> <span>Events</span>
 </Link>
-          </div>
           <div className="flex items-center space-x-3">
             <Search size={20} /> <span>Search</span>
           </div>
