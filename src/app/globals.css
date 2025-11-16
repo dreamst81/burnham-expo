@@ -51,4 +51,5 @@ label {
 /* Prevent Samsung/Android forced dark mode */
 html {
   color-scheme: light !important;
+  forced-color-adjust: none !important;
 }

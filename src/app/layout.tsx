@@ -52,45 +52,58 @@ export default function RootLayout({
 
   if (loading) {
     return (
-      <html>
+      <html style={{ colorScheme: "light" }}>
+        <head>
+          <meta name="color-scheme" content="light" />
+          <meta name="supported-color-schemes" content="light" />
+          <meta name="prefers-color-scheme" content="light" />
+          <meta name="darkreader-lock" />
+        </head>
         <body className="bg-[#f7f7f7]" />
       </html>
     );
   }
 
-  // Unauthenticated users: login only
+  // Unauthenticated users
   if (!isLoggedIn && pathname === "/login") {
     return (
-      <html lang="en">
-        <body className="bg-[#f7f7f7]">
-          {children}
-        </body>
+      <html lang="en" style={{ colorScheme: "light" }}>
+        <head>
+          <meta name="color-scheme" content="light" />
+          <meta name="supported-color-schemes" content="light" />
+          <meta name="prefers-color-scheme" content="light" />
+          <meta name="darkreader-lock" />
+        </head>
+        <body className="bg-[#f7f7f7]">{children}</body>
       </html>
     );
   }
 
   // Authenticated layout
   return (
-    <html lang="en">
-      <body className="bg-[#f7f7f7] flex">
+    <html lang="en" style={{ colorScheme: "light" }}>
+      <head>
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
+        <meta name="prefers-color-scheme" content="light" />
+        <meta name="darkreader-lock" />
+      </head>
 
-        {/* Sidebar */}
+      <body className="bg-[#f7f7f7] flex">
         <Sidebar />
 
-        {/* Main content */}
         <main
           className="
             flex-1 
-            pt-20        /* 🔥 double top padding */
-            px-6         /* general horizontal padding */
-            lg:ml-64     /* make room for sidebar */
-            lg:pl-10     /* 🔥 extra left padding on desktop */
+            pt-20
+            px-6
+            lg:ml-64
+            lg:pl-10
           "
         >
           {children}
         </main>
 
-        {/* Logo bottom-right */}
         <img
           src="/burnham-expo-logo.jpg"
           alt="Burnham Expo"
