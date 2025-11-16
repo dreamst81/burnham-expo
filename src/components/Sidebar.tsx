@@ -10,7 +10,7 @@ export default function Sidebar() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
-  // Fix hydration issues
+  // Avoid hydration mismatch
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -21,7 +21,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* 🔥 Fixed Mobile Hamburger (always visible, hydration-safe) */}
+      {/* 🟢 Mobile Hamburger (always visible) */}
       {mounted && (
         <button
           onClick={() => setOpen(true)}
@@ -36,16 +36,16 @@ export default function Sidebar() {
         >
           ☰
         </button>
-        
       )}
 
-      {/* Sidebar / Drawer */}
+      {/* 🟢 Sidebar Drawer (fixed to prevent layout shifts) */}
       <div
         className={`
-          fixed top-0 left-0 h-full w-64 shadow-xl transform
-          transition-transform duration-300 z-40
+          fixed top-0 left-0 h-full w-64 
+          shadow-xl transform transition-transform duration-300 
+          z-40
 
-          /* Desktop Sidebar */
+          /* Desktop */
           lg:translate-x-0 
           lg:bg-[#3b4522] lg:text-white 
 
@@ -53,6 +53,7 @@ export default function Sidebar() {
           ${open ? "translate-x-0" : "-translate-x-full"} 
           bg-[#f2f2f2] text-black
         `}
+        style={{ position: "fixed" }}   // 🔥 critical fix
       >
         {/* Mobile Close Button */}
         <div className="lg:hidden flex justify-end p-4">
@@ -65,7 +66,7 @@ export default function Sidebar() {
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Desktop-only Logo */}
+          {/* Desktop Logo */}
           <Image
             src="/burnham-expo-logo.jpg"
             alt="Burnham Expo Logo"
@@ -74,7 +75,7 @@ export default function Sidebar() {
             className="hidden lg:block mx-auto object-contain"
           />
 
-          {/* Nav Items */}
+          {/* Navigation */}
           <nav className="space-y-4">
             {[
               { label: "Home", href: "/" },
@@ -91,7 +92,7 @@ export default function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setOpen(false)} // close drawer on mobile
+                onClick={() => setOpen(false)} // close drawer
                 className="block text-lg hover:underline"
               >
                 {item.label}
@@ -109,7 +110,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Mobile Overlay */}
+      {/* 🟢 Mobile Overlay */}
       {open && (
         <div
           className="lg:hidden fixed inset-0 bg-black/40 z-30"
