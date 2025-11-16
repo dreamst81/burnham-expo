@@ -24,3 +24,25 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 🔥 GLOBAL CONTRAST FIX — Android friendly */
+
+/* Muted text becomes dark enough to read everywhere */
+.text-gray-500, .text-gray-600, .text-gray-700, .text-gray-800 {
+  color: #1a1a1a !important;
+}
+
+/* Inputs ALWAYS show dark text */
+input, textarea, select {
+  color: #0f0f0f !important;
+}
+
+/* Placeholder text (global) */
+::placeholder {
+  color: #6b7280 !important; /* Tailwind gray-600 */
+}
+
+/* Labels */
+label {
+  color: #111 !important;
+}
