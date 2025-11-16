@@ -77,7 +77,7 @@ Provide:
   return (
     <div className="space-y-10 max-w-4xl">
 
-      <div className="flex justify-end items-end">
+      <div className="flex justify-center items-end mb-10">
           <Image
             src="/edm-expo-logo.jpg"
             alt="Burnham Expo Logo"

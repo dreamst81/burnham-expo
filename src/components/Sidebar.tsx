@@ -1,6 +1,15 @@
 import Image from "next/image";
 import { User, BookOpen, Calendar, Search, LogOut, HomeIcon } from "lucide-react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+
+const router = useRouter();
+
+async function handleLogout() {
+  await supabase.auth.signOut();
+  router.push("/login");
+}
 
 export default function Sidebar() {
   return (
@@ -40,9 +49,18 @@ export default function Sidebar() {
 <Link href="/trade-shows/341ac0f3-82e0-484a-9809-ff512d6722a4/map" className="flex items-center space-x-3 hover:opacity-90">
   <User size={20} /> <span>MWW Map</span>
 </Link>
-          <Link href="/users" className="flex items-center space-x-3 hover:opacity-90">
-  <User size={20} /> <span>Users</span>
+          <Link href="/schedule" className="flex items-center space-x-3 hover:opacity-90">
+  <User size={20} /> <span>Schedule</span>
 </Link>
+<Link href="/team-schedule" className="flex items-center space-x-3 hover:opacity-90">
+  <User size={20} /> <span>Team Schedule</span>
+</Link>
+<button
+  onClick={handleLogout}
+  className="mt-6 w-full text-left text-sm px-3 py-2 rounded-lg text-red-700 hover:bg-red-100 transition"
+>
+  Log Out
+</button>
         </div>
       </div>
 
