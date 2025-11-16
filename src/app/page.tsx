@@ -88,23 +88,6 @@ Provide:
           />
         </div>
 
-      {/* Intel Snapshot */}
-      <div className="bg-white p-6 shadow rounded-xl space-y-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Burnham Dashboard</h1>
-          <button
-            onClick={generateDashboardIntel}
-            className="px-4 py-2 bg-[#3b4522] text-white rounded-lg hover:bg-[#2c341a]"
-          >
-            Generate Intel
-          </button>
-        </div>
-
-        <div className="border p-4 rounded-lg bg-gray-50 whitespace-pre-wrap">
-          {intel || "AI Intel will appear here"}
-        </div>
-      </div>
-
       {/* Quick Actions */}
       <div className="bg-white p-6 shadow rounded-xl space-y-4">
         <h2 className="text-xl font-semibold">Quick Actions</h2>

@@ -121,6 +121,52 @@ export default function MySchedulePage() {
     <div className="space-y-8 max-w-4xl">
       <h1 className="text-3xl font-bold">My Expo Schedule</h1>
 
+      {/* List */}
+      <div className="bg-white p-5 rounded-xl shadow space-y-4">
+        <h2 className="text-xl font-semibold">Upcoming Items</h2>
+
+        {items.length === 0 ? (
+          <p className="text-gray-500 text-sm">
+            Nothing on your schedule yet. Add your first item above.
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {items.map((item) => (
+              <li
+                key={item.id}
+                className="border rounded-lg px-4 py-3 flex justify-between items-start"
+              >
+                <div className="space-y-1">
+                  <div className="font-semibold">{item.title}</div>
+                  {item.location && (
+                    <div className="text-sm text-gray-600">
+                      Location: {item.location}
+                    </div>
+                  )}
+                  <div className="text-xs text-gray-500">
+                    {new Date(item.start_time).toLocaleString()}
+                    {item.end_time &&
+                      ` – ${new Date(item.end_time).toLocaleString()}`}
+                  </div>
+                  {item.note && (
+                    <div className="text-sm text-gray-700 mt-1">
+                      {item.note}
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => deleteItem(item.id)}
+                  className="text-xs text-red-600 hover:underline"
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       {/* Add Item Form */}
       <form onSubmit={addItem} className="bg-white p-5 rounded-xl shadow space-y-4">
         <h2 className="text-xl font-semibold">Add to My Schedule</h2>
@@ -189,51 +235,6 @@ export default function MySchedulePage() {
         </button>
       </form>
 
-      {/* List */}
-      <div className="bg-white p-5 rounded-xl shadow space-y-4">
-        <h2 className="text-xl font-semibold">Upcoming Items</h2>
-
-        {items.length === 0 ? (
-          <p className="text-gray-500 text-sm">
-            Nothing on your schedule yet. Add your first item above.
-          </p>
-        ) : (
-          <ul className="space-y-3">
-            {items.map((item) => (
-              <li
-                key={item.id}
-                className="border rounded-lg px-4 py-3 flex justify-between items-start"
-              >
-                <div className="space-y-1">
-                  <div className="font-semibold">{item.title}</div>
-                  {item.location && (
-                    <div className="text-sm text-gray-600">
-                      Location: {item.location}
-                    </div>
-                  )}
-                  <div className="text-xs text-gray-500">
-                    {new Date(item.start_time).toLocaleString()}
-                    {item.end_time &&
-                      ` – ${new Date(item.end_time).toLocaleString()}`}
-                  </div>
-                  {item.note && (
-                    <div className="text-sm text-gray-700 mt-1">
-                      {item.note}
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => deleteItem(item.id)}
-                  className="text-xs text-red-600 hover:underline"
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
     </div>
   );
 }
