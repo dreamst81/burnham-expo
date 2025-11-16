@@ -86,6 +86,7 @@ export default function Sidebar() {
                 label: "MWW Map",
                 href: "/trade-shows/341ac0f3-82e0-484a-9809-ff512d6722a4/map",
               },
+              { label: "TODAY", href: "/schedule/today" },
               { label: "My Schedule", href: "/schedule" },
               { label: "Team Schedule", href: "/team-schedule" },
             ].map((item) => (

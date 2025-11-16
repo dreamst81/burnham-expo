@@ -106,9 +106,12 @@ async function addToSchedule() {
   {saving ? "Adding…" : "+ Add to My Schedule"}
 </button>
 
-      <a href="/exhibitors" className="text-[#3b4522] underline">
-        ← Back to Exhibitors
-      </a>
+<a
+  href="/exhibitors"
+  className="text-[#3b4522] underline block mt-4"
+>
+  ← Back to Exhibitors
+</a>
     </div>
   );
 }

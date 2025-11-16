@@ -25,15 +25,12 @@ export default function RootLayout({
       const onLoginPage = pathname === "/login";
 
       if (!session && !onLoginPage) {
-        // Not logged in → force to /login
         setIsLoggedIn(false);
         router.replace("/login");
       } else if (session && onLoginPage) {
-        // Logged in but on login page → redirect home
         setIsLoggedIn(true);
         router.replace("/");
       } else {
-        // Allowed through
         setIsLoggedIn(!!session);
       }
 
@@ -42,12 +39,9 @@ export default function RootLayout({
 
     checkAuth();
 
-    // Listen for login/logout changes automatically
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_, session) => {
-        if (!session) {
-          router.replace("/login");
-        }
+        if (!session) router.replace("/login");
       }
     );
 
@@ -56,7 +50,6 @@ export default function RootLayout({
     };
   }, [pathname, router]);
 
-  // 🌙 Prevent hydration mismatches
   if (loading) {
     return (
       <html>
@@ -65,7 +58,7 @@ export default function RootLayout({
     );
   }
 
-  // 🛑 Unauthenticated users see *only* the login page
+  // Unauthenticated users: login only
   if (!isLoggedIn && pathname === "/login") {
     return (
       <html lang="en">
@@ -76,20 +69,28 @@ export default function RootLayout({
     );
   }
 
-  // 🔐 Authenticated layout
+  // Authenticated layout
   return (
     <html lang="en">
       <body className="bg-[#f7f7f7] flex">
 
-        {/* Sidebar only when logged in */}
+        {/* Sidebar */}
         <Sidebar />
 
         {/* Main content */}
-        <main className="flex-1 p-6 lg:ml-64">
+        <main
+          className="
+            flex-1 
+            pt-20        /* 🔥 double top padding */
+            px-6         /* general horizontal padding */
+            lg:ml-64     /* make room for sidebar */
+            lg:pl-10     /* 🔥 extra left padding on desktop */
+          "
+        >
           {children}
         </main>
 
-        {/* Burnham Logo (bottom-right) */}
+        {/* Logo bottom-right */}
         <img
           src="/burnham-expo-logo.jpg"
           alt="Burnham Expo"
