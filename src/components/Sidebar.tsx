@@ -89,6 +89,7 @@ export default function Sidebar() {
               { label: "TODAY", href: "/schedule/today" },
               { label: "My Schedule", href: "/schedule" },
               { label: "Team Schedule", href: "/team-schedule" },
+              { label: "My vCard", href: "/my-contact" },
             ].map((item) => (
               <Link
                 key={item.href}
